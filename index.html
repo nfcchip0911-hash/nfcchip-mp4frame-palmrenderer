@@ -12,6 +12,9 @@
 </head>
 <body>
 
+  <!-- Banner hiển thị lỗi trực tiếp trên màn hình điện thoại (nếu có lỗi JS xảy ra) -->
+  <div id="debug-banner" style="display:none; position:fixed; top:12px; left:12px; right:12px; z-index:99999; background:rgba(239,68,68,0.95); color:#fff; padding:12px 16px; border-radius:12px; font-size:13px; line-height:1.4; box-shadow:0 10px 25px rgba(0,0,0,0.5);"></div>
+
   <!-- Khung ứng dụng chính -->
   <div id="app-container">
     
@@ -41,7 +44,7 @@
       </div>
 
       <div class="splash-center">
-        <button id="btn-start" class="btn-start-ar">
+        <button id="btn-start" class="btn-start-ar" type="button">
           <span>Chạm để Bắt đầu</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5 3 19 12 5 21 5 3"/>

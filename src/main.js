@@ -4,6 +4,25 @@ import { getCardBySlug } from './supabaseClient.js';
 import { HandTracker } from './handTracker.js';
 import { PalmRenderer } from './palmRenderer.js';
 
+// Bắt mọi lỗi JavaScript và hiển thị trực tiếp lên màn hình điện thoại
+function showDebugError(msg) {
+  const banner = document.getElementById('debug-banner');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.innerHTML = `<strong>Lỗi:</strong> ${msg}`;
+  }
+}
+
+window.addEventListener('error', (e) => {
+  console.error('[Global Error]', e);
+  showDebugError(e.message || 'Lỗi kịch bản');
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[Unhandled Rejection]', e);
+  showDebugError(e.reason ? e.reason.message || e.reason : 'Lỗi kết nối');
+});
+
 class WebARApp {
   constructor() {
     this.cameraVideo = document.getElementById('camera-stream');
@@ -21,24 +40,27 @@ class WebARApp {
     this.isStarting = false;
     this.isStreaming = false;
 
-    // GẮN SỰ KIỆN NGAY LẬP TỨC (ĐỒNG BỘ) - KHÔNG ĐỂ CHỜ ASYNC
+    // Gắn sự kiện click/touch ngay lập tức
     this.setupButtonListener();
 
     this.init();
   }
 
   setupButtonListener() {
-    const handleTrigger = (e) => {
+    if (!this.btnStart) return;
+
+    const onTrigger = (e) => {
+      console.log('[Button Triggered]', e ? e.type : 'manual');
       if (e) {
-        e.preventDefault();
+        e.stopPropagation();
       }
       if (this.isStarting) return;
       this.handleStartExperience();
     };
 
-    // Hỗ trợ cả touch trên di động và click trên máy tính
-    this.btnStart.addEventListener('touchstart', handleTrigger, { passive: false });
-    this.btnStart.addEventListener('click', handleTrigger);
+    // Lắng nghe cả touchstart, touchend và click để đảm bảo ăn 100% trên mọi thiết bị
+    this.btnStart.addEventListener('touchstart', onTrigger, { passive: true });
+    this.btnStart.addEventListener('click', onTrigger);
   }
 
   async init() {
@@ -76,13 +98,13 @@ class WebARApp {
       this.btnStart.disabled = true;
       this.btnStart.innerText = 'Đang khởi động...';
 
-      // 1. Nếu dữ liệu thẻ từ Supabase chưa về kịp, đợi nó hoàn tất
+      // 1. Lấy dữ liệu thẻ (nếu chưa hoàn tất thì đợi)
       if (!this.cardData) {
         this.btnStart.innerText = 'Đang nạp dữ liệu...';
         this.cardData = await this.cardDataPromise;
       }
 
-      // 2. Mở khóa âm thanh (Unlock Audio) ngay trong cú chạm đầu tiên
+      // 2. Mở khóa âm thanh (Unlock Audio) trong cú chạm đầu tiên
       this.sourceVideo.src = this.cardData.video_url;
       this.sourceVideo.load();
 
@@ -111,7 +133,7 @@ class WebARApp {
       this.startRenderLoop();
     } catch (err) {
       console.error('[WebAR] Lỗi khởi động:', err);
-      alert(`Không thể khởi động: ${err.message || 'Lỗi thiết bị'}. Vui lòng thử lại.`);
+      showDebugError(`Không thể khởi động: ${err.message || 'Lỗi phần cứng/camera'}`);
       this.isStarting = false;
       this.btnStart.disabled = false;
       this.btnStart.innerText = 'Chạm để Bắt đầu';
@@ -148,7 +170,6 @@ class WebARApp {
           await track.applyConstraints({
             advanced: [{ focusMode: 'continuous' }],
           });
-          console.log('[Camera] Đã bật chế độ Continuous Auto-Focus!');
         } catch (e) {
           console.warn('[Camera] Không thể kích hoạt Continuous Focus:', e);
         }
@@ -175,13 +196,9 @@ class WebARApp {
   startRenderLoop() {
     const processFrame = (now) => {
       if (this.isStreaming && this.cameraVideo.readyState >= 2) {
-        // AI phát hiện bàn tay ngửa trên Camera sau
         const handState = this.handTracker.detectHand(this.cameraVideo, now, true);
-
-        // Vẽ video 16:9 lên lòng bàn tay
         this.palmRenderer.render(handState);
 
-        // Ẩn/Hiện chỉ dẫn quét bàn tay
         if (handState) {
           this.scanHint.classList.add('hidden');
         } else {

@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Fallback trực tiếp vào cấu hình project của bạn để đảm bảo không bao giờ bị lỗi undefined trên Vercel
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ixxjtpllicmcwouafvwj.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_CNIfJR0j4YHdlQo_j5EOCg_HN-jrTMb';
 const defaultSlug = import.meta.env.VITE_DEFAULT_VIDEO_SLUG || 'demo';
+
+console.log('[Supabase Config] URL:', supabaseUrl ? 'OK' : 'MISSING');
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -40,7 +43,6 @@ export async function getCardBySlug(slug) {
       return getFallbackCard(targetSlug);
     }
 
-    // Lưu vào sessionStorage để tái sử dụng suốt phiên
     sessionStorage.setItem(cacheKey, JSON.stringify(data));
     return data;
   } catch (err) {
@@ -58,16 +60,13 @@ export async function recordScanEngagement(slug) {
   if (!slug) return;
   const sessionGuardKey = `scan_counted_${slug}`;
 
-  // Kiểm tra cờ đã đếm trong phiên
   if (sessionStorage.getItem(sessionGuardKey)) {
-    return; // Đã đếm trong phiên này rồi, bỏ qua để không tốn usage
+    return;
   }
 
   try {
-    // Đánh dấu cờ ngay lập tức để tránh race-condition
     sessionStorage.setItem(sessionGuardKey, 'true');
 
-    // Gọi Stored Procedure bảo mật
     const { error } = await supabase.rpc('increment_view_count', {
       target_slug: slug,
     });
