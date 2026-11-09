@@ -191,6 +191,11 @@ html, body {
   justify-content: center;
   gap: 10px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
+}
+
+.btn-start-ar * {
+  pointer-events: none;
 }
 
 .btn-start-ar:active {
