@@ -6,7 +6,7 @@ export class HandTracker {
     this.isReady = false;
     this.isLoading = false;
 
-    // Bộ lọc làm mượt (EMA Filter state)
+    // Bộ lọc làm mượt (EMA Filter state trên tọa độ màn hình)
     this.smoothState = {
       x: null,
       y: null,
@@ -16,14 +16,9 @@ export class HandTracker {
     this.emaAlpha = 0.65;
   }
 
-  /**
-   * Khởi tạo Model MediaPipe HandLandmarker
-   * Áp dụng cơ chế Preload + Nén Brotli CDN + Fallback CPU chống treo máy
-   */
   async init(onStatusUpdate) {
     if (this.isReady) return true;
     if (this.isLoading) {
-      // Đang có tiến trình tải, đợi hoàn tất
       return new Promise((resolve, reject) => {
         const check = setInterval(() => {
           if (this.isReady) {
@@ -44,8 +39,6 @@ export class HandTracker {
       if (onStatusUpdate) onStatusUpdate('Đang tải bộ nén AI...');
       console.log('[MediaPipe] Khởi tạo FilesetResolver...');
 
-      // 1. Thử tải WASM từ CDN (có nén Brotli siêu nhẹ ~2.5MB thay vì 11MB uncompressed)
-      // Nếu CDN chậm hoặc mất mạng, tự động fallback về /models/wasm nội bộ
       let vision;
       try {
         vision = await Promise.race([
@@ -53,7 +46,7 @@ export class HandTracker {
           new Promise((_, reject) => setTimeout(() => reject(new Error('CDN timeout')), 5000)),
         ]);
       } catch (cdnErr) {
-        console.warn('[MediaPipe] CDN không phản hồi, chuyển sang WASM nội bộ:', cdnErr.message);
+        console.warn('[MediaPipe] Chuyển sang WASM nội bộ:', cdnErr.message);
         vision = await FilesetResolver.forVisionTasks('/models/wasm');
       }
 
@@ -73,7 +66,6 @@ export class HandTracker {
         });
       };
 
-      // 2. Thử GPU trước; nếu điện thoại không tương thích WebGL hoặc treo quá 3.5s thì fallback ngay sang CPU
       try {
         this.handLandmarker = await Promise.race([
           createWithDelegate('GPU'),
@@ -81,7 +73,7 @@ export class HandTracker {
         ]);
         console.log('[MediaPipe] Khởi tạo thành công với GPU Delegate!');
       } catch (gpuErr) {
-        console.warn('[MediaPipe] GPU không khả dụng trên trình duyệt này, chuyển sang CPU...', gpuErr.message);
+        console.warn('[MediaPipe] Chuyển sang CPU Delegate...', gpuErr.message);
         if (onStatusUpdate) onStatusUpdate('Đang tối ưu CPU thiết bị...');
         this.handLandmarker = await createWithDelegate('CPU');
         console.log('[MediaPipe] Khởi tạo thành công với CPU Delegate!');
@@ -98,9 +90,14 @@ export class HandTracker {
   }
 
   /**
-   * Phân tích khung hình từ Camera
+   * Phân tích khung hình từ Camera và ánh xạ trực tiếp sang toạ độ Màn Hình (Screen Pixels)
+   * @param {HTMLVideoElement} videoElement
+   * @param {number} timestamp
+   * @param {number} screenWidth Chiều rộng màn hình (window.innerWidth)
+   * @param {number} screenHeight Chiều cao màn hình (window.innerHeight)
+   * @param {boolean} isRearCamera
    */
-  detectHand(videoElement, timestamp, isRearCamera = true) {
+  detectHand(videoElement, timestamp, screenWidth, screenHeight, isRearCamera = true) {
     if (!this.isReady || !this.handLandmarker) return null;
 
     try {
@@ -118,21 +115,51 @@ export class HandTracker {
         return null;
       }
 
-      // 2. Kiểm tra lòng bàn tay ngửa (Palm-Facing)
+      // 2. Kiểm tra ngửa lòng bàn tay (Palm-Facing)
       if (!this.isPalmFacingCamera(landmarks, handedness, isRearCamera)) {
         return null;
       }
 
-      // 3. Tính tâm lòng bàn tay
-      const rawCenter = this.calculatePalmCenter(landmarks, videoElement.videoWidth, videoElement.videoHeight);
+      // 3. Tính toán ma trận biến đổi object-fit: cover của Video sang Màn hình
+      const vWidth = videoElement.videoWidth || screenWidth;
+      const vHeight = videoElement.videoHeight || screenHeight;
+      const coverScale = Math.max(screenWidth / vWidth, screenHeight / vHeight);
+      const renderedWidth = vWidth * coverScale;
+      const renderedHeight = vHeight * coverScale;
+      const offsetX = (screenWidth - renderedWidth) / 2;
+      const offsetY = (screenHeight - renderedHeight) / 2;
 
-      // 4. Tính góc xoay
-      const rawAngle = this.calculateHandAngle(landmarks);
+      // Hàm chuyển toạ độ chuẩn hoá MediaPipe (0..1) sang pixel màn hình thực
+      const toScreen = (lm) => ({
+        x: offsetX + lm.x * renderedWidth,
+        y: offsetY + lm.y * renderedHeight,
+      });
 
-      // 5. Tính kích thước
-      const rawScale = this.calculatePalmScale(landmarks, videoElement.videoWidth, videoElement.videoHeight);
+      const p0 = toScreen(landmarks[0]);   // Cổ tay
+      const p5 = toScreen(landmarks[5]);   // Khớp ngón trỏ
+      const p9 = toScreen(landmarks[9]);   // Khớp ngón giữa
+      const p17 = toScreen(landmarks[17]); // Khớp ngón út
 
-      // 6. Làm mượt chuyển động
+      // Tâm lòng bàn tay chính xác trên màn hình
+      const rawCenter = {
+        x: (p0.x + p5.x + p9.x + p17.x) / 4,
+        y: (p0.y + p5.y + p9.y + p17.y) / 4,
+      };
+
+      // Vector trục dọc từ cổ tay đến ngón giữa trên màn hình
+      const dx = p9.x - p0.x;
+      const dy = p9.y - p0.y;
+
+      // Góc xoay chính xác trên màn hình
+      const rawAngle = Math.atan2(dy, dx) + Math.PI / 2;
+
+      // Chiều cao lòng bàn tay thực tế trên màn hình (đơn vị: screen pixels)
+      const palmHeightOnScreen = Math.hypot(dx, dy);
+
+      // Kích thước video: Chiều cao bằng 0.95 chiều dài lòng bàn tay
+      const rawScale = palmHeightOnScreen * 0.95;
+
+      // 4. Áp dụng bộ lọc làm mượt EMA
       return this.applyEmaSmoothing(rawCenter, rawAngle, rawScale);
     } catch (detectErr) {
       console.warn('[MediaPipe] Lỗi xử lý frame:', detectErr);
@@ -168,32 +195,6 @@ export class HandTracker {
     } else {
       return handedness === 'Left' ? crossZ < 0 : crossZ > 0;
     }
-  }
-
-  calculatePalmCenter(lm, width, height) {
-    const p0 = lm[0];
-    const p5 = lm[5];
-    const p9 = lm[9];
-    const p17 = lm[17];
-
-    return {
-      x: ((p0.x + p5.x + p9.x + p17.x) / 4) * width,
-      y: ((p0.y + p5.y + p9.y + p17.y) / 4) * height,
-    };
-  }
-
-  calculateHandAngle(lm) {
-    const p0 = lm[0];
-    const p9 = lm[9];
-    return Math.atan2(p9.y - p0.y, p9.x - p0.x) + Math.PI / 2;
-  }
-
-  calculatePalmScale(lm, width, height) {
-    const p0 = lm[0];
-    const p9 = lm[9];
-    const dx = (p9.x - p0.x) * width;
-    const dy = (p9.y - p0.y) * height;
-    return Math.hypot(dx, dy) * 1.25;
   }
 
   applyEmaSmoothing(rawCenter, rawAngle, rawScale) {

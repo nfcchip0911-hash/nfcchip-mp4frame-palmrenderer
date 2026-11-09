@@ -4,7 +4,6 @@ import { getCardBySlug } from './supabaseClient.js';
 import { HandTracker } from './handTracker.js';
 import { PalmRenderer } from './palmRenderer.js';
 
-// Bắt mọi lỗi JavaScript và hiển thị trực tiếp lên màn hình điện thoại
 function showDebugError(msg) {
   const banner = document.getElementById('debug-banner');
   if (banner) {
@@ -40,9 +39,7 @@ class WebARApp {
     this.isStarting = false;
     this.isStreaming = false;
 
-    // Gắn sự kiện click/touch ngay lập tức
     this.setupButtonListener();
-
     this.init();
   }
 
@@ -58,29 +55,25 @@ class WebARApp {
       this.handleStartExperience();
     };
 
-    // Lắng nghe cả touchstart, touchend và click để đảm bảo ăn 100% trên mọi thiết bị
     this.btnStart.addEventListener('touchstart', onTrigger, { passive: true });
     this.btnStart.addEventListener('click', onTrigger);
   }
 
   async init() {
-    // 1. Kiểm tra trình duyệt nhúng (Zalo / FB / TikTok)
     if (checkInAppBrowser()) {
       return;
     }
 
-    // 2. Preload tải sẵn AI trong chế độ ngầm ngay khi mở trang
+    // Preload AI trong chế độ ngầm
     this.handTracker.init((status) => {
       console.log('[AI Status]', status);
     }).catch((err) => {
       console.warn('[AI Preload Warning]', err);
     });
 
-    // 3. Đọc mã thẻ từ URL parameter (?v=slug)
     const urlParams = new URLSearchParams(window.location.search);
     const slug = urlParams.get('v');
 
-    // 4. Bắt đầu tải dữ liệu Supabase (Không chặn việc bấm nút)
     this.cardDataPromise = getCardBySlug(slug).then((data) => {
       this.cardData = data;
       if (this.cardData && this.cardData.title) {
@@ -98,21 +91,30 @@ class WebARApp {
       this.btnStart.disabled = true;
       this.btnStart.innerText = 'Đang khởi động...';
 
-      // 1. Lấy dữ liệu thẻ (nếu chưa hoàn tất thì đợi)
       if (!this.cardData) {
         this.btnStart.innerText = 'Đang nạp dữ liệu...';
         this.cardData = await this.cardDataPromise;
       }
 
-      // 2. Mở khóa âm thanh (Unlock Audio) trong cú chạm đầu tiên
+      // Mở khóa âm thanh & video ngay trong user gesture
       this.sourceVideo.src = this.cardData.video_url;
       this.sourceVideo.load();
+      try {
+        const unlockPromise = this.sourceVideo.play();
+        if (unlockPromise !== undefined) {
+          unlockPromise.then(() => {
+            this.sourceVideo.pause();
+          }).catch(() => {
+            this.sourceVideo.muted = true;
+          });
+        }
+      } catch (e) {
+        console.warn('Audio unlock silent catch', e);
+      }
 
-      // 3. Khởi động Camera sau
       this.btnStart.innerText = 'Đang bật Camera...';
       await this.startCamera();
 
-      // 4. Đảm bảo AI đã sẵn sàng
       if (!this.handTracker.isReady) {
         this.btnStart.innerText = 'Đang nạp AI...';
         await this.handTracker.init((status) => {
@@ -120,20 +122,18 @@ class WebARApp {
         });
       }
 
-      // 5. Khởi tạo Bộ vẽ PalmRenderer
       this.palmRenderer = new PalmRenderer(this.arCanvas, this.sourceVideo, this.cardData);
+      this.updateCanvasDimensions();
 
-      // 6. Ẩn Splash Screen
       this.splashScreen.classList.add('fade-out');
       setTimeout(() => {
         this.splashScreen.style.display = 'none';
       }, 500);
 
-      // 7. Bắt đầu vòng lặp xử lý hình ảnh 60 FPS
       this.startRenderLoop();
     } catch (err) {
       console.error('[WebAR] Lỗi khởi động:', err);
-      showDebugError(`Không thể khởi động: ${err.message || 'Lỗi phần cứng/camera'}`);
+      showDebugError(`Không thể khởi động: ${err.message || 'Lỗi thiết bị'}`);
       this.isStarting = false;
       this.btnStart.disabled = false;
       this.btnStart.innerText = 'Chạm để Bắt đầu';
@@ -170,8 +170,9 @@ class WebARApp {
           await track.applyConstraints({
             advanced: [{ focusMode: 'continuous' }],
           });
+          console.log('[Camera] Đã bật Continuous Focus!');
         } catch (e) {
-          console.warn('[Camera] Không thể kích hoạt Continuous Focus:', e);
+          console.warn('[Camera] Không thể set Continuous Focus:', e);
         }
       }
     }
@@ -188,15 +189,27 @@ class WebARApp {
   }
 
   updateCanvasDimensions() {
-    const width = this.cameraVideo.videoWidth || window.innerWidth;
-    const height = this.cameraVideo.videoHeight || window.innerHeight;
-    this.palmRenderer?.resize(width, height);
+    // Canvas khớp 100% với kích thước hiển thị màn hình thực của điện thoại
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    this.palmRenderer?.resize(screenWidth, screenHeight);
   }
 
   startRenderLoop() {
     const processFrame = (now) => {
       if (this.isStreaming && this.cameraVideo.readyState >= 2) {
-        const handState = this.handTracker.detectHand(this.cameraVideo, now, true);
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // Phân tích bàn tay và ánh xạ chuẩn xác sang pixel màn hình
+        const handState = this.handTracker.detectHand(
+          this.cameraVideo,
+          now,
+          screenWidth,
+          screenHeight,
+          true
+        );
+
         this.palmRenderer.render(handState);
 
         if (handState) {
