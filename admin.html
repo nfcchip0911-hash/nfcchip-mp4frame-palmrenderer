@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Trị Thẻ NFC & Video WebAR</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/logo.svg">
+  <link rel="stylesheet" href="/src/admin/admin.css">
+</head>
+<body>
+
+  <div id="admin-app">
+    <!-- 1. Màn hình Đăng nhập (Login) -->
+    <div id="login-section" class="admin-panel card-box">
+      <div class="panel-header">
+        <img src="/brand/logo.svg" alt="Logo" class="admin-logo">
+        <h2>Đăng Nhập Quản Trị</h2>
+        <p>Hệ thống Quản lý Video WebAR & Thẻ NFC</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email Quản trị</label>
+          <input type="email" id="login-email" required placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Mật khẩu</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" id="btn-login" class="btn-primary">
+          Đăng Nhập
+        </button>
+        <p id="login-error" class="error-msg"></p>
+      </form>
+    </div>
+
+    <!-- 2. Bảng điều khiển Quản trị (Dashboard) -->
+    <div id="dashboard-section" class="admin-dashboard" style="display: none;">
+      <header class="dashboard-header">
+        <div class="header-brand">
+          <img src="/brand/logo.svg" alt="Logo" class="header-logo">
+          <div>
+            <h1>Quản Trị Thẻ NFC WebAR</h1>
+            <span id="user-display" class="user-badge"></span>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn-secondary">Đăng Xuất</button>
+      </header>
+
+      <main class="dashboard-grid">
+        <!-- Form Upload Video & Tạo Link Mới -->
+        <section class="card-box create-card-panel">
+          <h3>+ Thêm Video & Tạo Link NFC Mới</h3>
+          <p class="panel-subtitle">Tải video MP4 lên Supabase Storage và sinh link nạp thẻ tự động</p>
+
+          <form id="create-card-form">
+            <div class="form-group">
+              <label for="card-title-input">Tên gợi nhớ / Lời chúc</label>
+              <input type="text" id="card-title-input" required placeholder="Ví dụ: Thiệp Cưới Khách VIP 01">
+            </div>
+
+            <div class="form-group">
+              <label for="card-slug-input">Mã định danh (Slug không dấu)</label>
+              <input type="text" id="card-slug-input" required placeholder="thiep-cuoi-vip-01" pattern="[a-z0-9-_]+">
+              <small>Chỉ dùng chữ thường, số, dấu gạch nối (-). Ví dụ: `thiep-cuoi-01`</small>
+            </div>
+
+            <div class="form-group">
+              <label for="card-video-file">Chọn File Video MP4 (16:9, dưới 10MB)</label>
+              <input type="file" id="card-video-file" accept="video/mp4" required>
+            </div>
+
+            <button type="submit" id="btn-create-card" class="btn-primary">
+              Tải Lên & Tạo Link NFC
+            </button>
+            <div id="upload-progress" class="progress-bar-container" style="display: none;">
+              <div id="progress-bar-fill" class="progress-bar-fill"></div>
+            </div>
+            <p id="create-card-status" class="status-msg"></p>
+          </form>
+        </section>
+
+        <!-- Bảng Danh Sách Thẻ & Thống Kê Lượt Quét -->
+        <section class="card-box cards-list-panel">
+          <div class="list-header">
+            <h3>Danh Sách Thẻ Đã Phát Hành</h3>
+            <button id="btn-refresh-list" class="btn-icon" title="Làm mới">↻ Làm mới</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã Thẻ (Slug)</th>
+                  <th>Tiêu Đề</th>
+                  <th>Lượt Quét Thực Tế</th>
+                  <th>Ngày Tạo</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="cards-table-body">
+                <tr>
+                  <td colspan="5" class="text-center">Đang tải dữ liệu...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <!-- Modal Xem Mã QR & Link NFC -->
+      <div id="qr-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+          <button id="btn-close-modal" class="modal-close">&times;</button>
+          <h3 id="modal-qr-title">Mã QR & Link NFC</h3>
+          <div id="modal-qr-img-container" class="qr-container"></div>
+          <div class="link-copy-box">
+            <input type="text" id="modal-qr-link" readonly>
+            <button id="btn-modal-copy" class="btn-primary">Sao Chép Link</button>
+          </div>
+          <p class="qr-note">Dùng app <strong>NFC Tools</strong> để nạp đường link này vào thẻ NTAG215</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/admin/admin.js"></script>
+</body>
+</html>
