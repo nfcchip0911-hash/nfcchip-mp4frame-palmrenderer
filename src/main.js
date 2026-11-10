@@ -182,7 +182,18 @@ class WebARApp {
         this.cameraVideo.play();
         this.isStreaming = true;
         this.updateCanvasDimensions();
-        window.addEventListener('resize', () => this.updateCanvasDimensions());
+
+        const handleOrientationResize = () => {
+          this.updateCanvasDimensions();
+          this.handTracker.resetSmoothing();
+          setTimeout(() => {
+            this.updateCanvasDimensions();
+            this.handTracker.resetSmoothing();
+          }, 150);
+        };
+
+        window.addEventListener('resize', handleOrientationResize);
+        window.addEventListener('orientationchange', handleOrientationResize);
         resolve();
       };
     });

@@ -6,6 +6,9 @@ export class HandTracker {
     this.isReady = false;
     this.isLoading = false;
 
+    // Theo dõi tư thế bàn tay với Hysteresis chống rung chuyển trạng thái
+    this.currentPose = 'VERTICAL'; // 'VERTICAL' | 'HORIZONTAL' | 'INVERTED'
+
     // Bộ lọc làm mượt (EMA Filter state trên tọa độ màn hình)
     this.smoothState = {
       x: null,
@@ -91,11 +94,6 @@ export class HandTracker {
 
   /**
    * Phân tích khung hình từ Camera và ánh xạ trực tiếp sang toạ độ Màn Hình (Screen Pixels)
-   * @param {HTMLVideoElement} videoElement
-   * @param {number} timestamp
-   * @param {number} screenWidth Chiều rộng màn hình (window.innerWidth)
-   * @param {number} screenHeight Chiều cao màn hình (window.innerHeight)
-   * @param {boolean} isRearCamera
    */
   detectHand(videoElement, timestamp, screenWidth, screenHeight, isRearCamera = true) {
     if (!this.isReady || !this.handLandmarker) return null;
@@ -129,7 +127,6 @@ export class HandTracker {
       const offsetX = (screenWidth - renderedWidth) / 2;
       const offsetY = (screenHeight - renderedHeight) / 2;
 
-      // Hàm chuyển toạ độ chuẩn hoá MediaPipe (0..1) sang pixel màn hình thực
       const toScreen = (lm) => ({
         x: offsetX + lm.x * renderedWidth,
         y: offsetY + lm.y * renderedHeight,
@@ -146,25 +143,80 @@ export class HandTracker {
         y: (p0.y + p5.y + p9.y + p17.y) / 4,
       };
 
-      // Vector trục dọc từ cổ tay đến ngón giữa trên màn hình
-      const dx = p9.x - p0.x;
-      const dy = p9.y - p0.y;
+      // 4. Smart Horizon Auto-Leveling: Tự cân bằng góc nhìn cho cả tay đứng và tay ngang
+      const { targetAngle, targetScale } = this.computeSmartOrientation(p0, p5, p9, p17);
 
-      // Góc xoay chính xác trên màn hình
-      const rawAngle = Math.atan2(dy, dx) + Math.PI / 2;
-
-      // Chiều cao lòng bàn tay thực tế trên màn hình (đơn vị: screen pixels)
-      const palmHeightOnScreen = Math.hypot(dx, dy);
-
-      // Kích thước video: Chiều cao bằng 0.95 chiều dài lòng bàn tay
-      const rawScale = palmHeightOnScreen * 0.95;
-
-      // 4. Áp dụng bộ lọc làm mượt EMA
-      return this.applyEmaSmoothing(rawCenter, rawAngle, rawScale);
+      // 5. Áp dụng bộ lọc làm mượt EMA
+      return this.applyEmaSmoothing(rawCenter, targetAngle, targetScale);
     } catch (detectErr) {
       console.warn('[MediaPipe] Lỗi xử lý frame:', detectErr);
       return null;
     }
+  }
+
+  /**
+   * Thuật toán Smart Horizon Auto-Leveling & Dynamic Pose Scaling
+   * Giữ khung video luôn hiển thị ngang thuận mắt người xem (nghiêng nhẹ tối đa ±20° theo tay)
+   * Bất kể người dùng giơ tay đứng (VERTICAL), đặt tay ngang (HORIZONTAL), hay chúc xuống (INVERTED)
+   */
+  computeSmartOrientation(p0, p5, p9, p17) {
+    const dx = p9.x - p0.x;
+    const dy = p9.y - p0.y;
+    const palmLength = Math.hypot(dx, dy);
+    const palmBreadth = Math.hypot(p17.x - p5.x, p17.y - p5.y);
+
+    // Góc trục tay chuẩn (0 rad = tay đứng hướng ngón tay lên trên)
+    let rawAxisAngle = Math.atan2(dy, dx) + Math.PI / 2;
+    while (rawAxisAngle > Math.PI) rawAxisAngle -= Math.PI * 2;
+    while (rawAxisAngle < -Math.PI) rawAxisAngle += Math.PI * 2;
+
+    const absAngleDeg = (Math.abs(rawAxisAngle) * 180) / Math.PI;
+
+    // Máy trạng thái Hysteresis chống nhấp nháy khung hình ở vùng giao thoa 45° và 135°
+    if (this.currentPose === 'VERTICAL') {
+      if (absAngleDeg >= 135) {
+        this.currentPose = 'INVERTED';
+      } else if (absAngleDeg > 55) {
+        this.currentPose = 'HORIZONTAL';
+      }
+    } else if (this.currentPose === 'HORIZONTAL') {
+      if (absAngleDeg < 35) {
+        this.currentPose = 'VERTICAL';
+      } else if (absAngleDeg > 145) {
+        this.currentPose = 'INVERTED';
+      }
+    } else if (this.currentPose === 'INVERTED') {
+      if (absAngleDeg < 35) {
+        this.currentPose = 'VERTICAL';
+      } else if (absAngleDeg < 125) {
+        this.currentPose = 'HORIZONTAL';
+      }
+    }
+
+    const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+    const maxTilt = 0.35; // Giới hạn nghiêng AR tối đa ±20 độ (~0.35 rad)
+
+    let targetAngle = 0;
+    let targetScale = palmLength * 0.95;
+
+    if (this.currentPose === 'VERTICAL') {
+      targetAngle = clamp(rawAxisAngle, -maxTilt, maxTilt);
+      targetScale = palmLength * 0.95;
+    } else if (this.currentPose === 'HORIZONTAL') {
+      // Bù trừ góc 90 độ về trục ngang thuận mắt
+      const signedRightAngle = rawAxisAngle >= 0 ? Math.PI / 2 : -Math.PI / 2;
+      const relativeTilt = rawAxisAngle - signedRightAngle;
+      targetAngle = clamp(relativeTilt, -maxTilt, maxTilt);
+      // Căn kích thước video 16:9 hài hòa theo lòng bàn tay nằm ngang
+      targetScale = Math.max(palmBreadth * 1.15, palmLength * 0.72);
+    } else {
+      // INVERTED: Bù trừ 180 độ không để video lộn ngược đầu
+      const relativeTilt = rawAxisAngle > 0 ? rawAxisAngle - Math.PI : rawAxisAngle + Math.PI;
+      targetAngle = clamp(relativeTilt, -maxTilt, maxTilt);
+      targetScale = palmLength * 0.95;
+    }
+
+    return { targetAngle, targetScale };
   }
 
   isOpenHand(lm) {
@@ -229,5 +281,6 @@ export class HandTracker {
     this.smoothState.y = null;
     this.smoothState.scale = null;
     this.smoothState.angle = null;
+    this.currentPose = 'VERTICAL';
   }
 }

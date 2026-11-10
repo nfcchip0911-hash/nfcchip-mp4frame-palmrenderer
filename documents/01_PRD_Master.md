@@ -98,17 +98,17 @@ flowchart TD
   - Kết hợp với thuộc tính bàn tay trái hay phải (`handedness` do MediaPipe trả về):
     - Nếu thành phần $n_z < 0$ (hoặc ngược lại tùy theo tay trái/phải), xác định bàn tay đang **ngửa lòng bàn tay về phía camera**.
     - Nếu người dùng úp mu bàn tay hoặc nghiêng tay quá $70^\circ$, hệ thống từ chối vẽ video để giữ độ chuẩn xác nghiệp vụ.
+- **Ánh xạ Tọa độ Màn hình (Screen-Space Projection):** Tự động bù trừ tỷ lệ co dãn và cắt viền (`object-fit: cover`) của luồng camera so với màn hình điện thoại thực tế, hỗ trợ cả chiều dọc (Portrait) và xoay ngang (Landscape).
 - **Tính Tâm Lòng Bàn Tay ($P_{\text{center}}$):**
   $$P_{\text{center}} = \frac{P_0 + P_5 + P_9 + P_{17}}{4}$$
-- **Tính Góc Xoay ($\theta$):**
-  $$\theta = \operatorname{atan2}(y_9 - y_0, x_9 - x_0) + \frac{\pi}{2}$$
-- **Tính Kích Thước Video 16:9 (Scaling Strategy):**
-  - Khách hàng đã chốt chuẩn video **Ngang (16:9)** và yêu cầu hiển thị to rõ.
-  - Chiều cao khung video ($H_{\text{video}}$) được căn theo khoảng cách giữa Cổ tay ($P_0$) và Khớp ngón giữa ($P_9$):
-    $$H_{\text{video}} = \|P_9 - P_0\| \times 1.25$$
-  - Chiều rộng khung video ($W_{\text{video}}$) tự động tính theo tỷ lệ chuẩn 16:9:
-    $$W_{\text{video}} = H_{\text{video}} \times \frac{16}{9}$$
-  - **Kết quả hiển thị:** Khung video nằm trang trọng ở tâm bàn tay, hai mép trái và phải tràn nhẹ tự nhiên qua khớp ngón tay cái và ngón út.
+- **Thuật toán Cân Bằng Hướng Nhìn Thông Minh (Smart Horizon Auto-Leveling):**
+  - Xác định tư thế bàn tay với vùng trễ **Hysteresis ($35^\circ - 55^\circ$)** cho 3 trạng thái: **Tay Đứng (`VERTICAL`)**, **Tay Ngang (`HORIZONTAL`)** và **Tay Chúc Ngược (`INVERTED`)**.
+  - Dù người dùng giơ tay đứng hay đặt tay nằm ngang trên bàn, video luôn tự động bù trừ góc $90^\circ$ hoặc $180^\circ$ để **luôn hiển thị nằm ngang thuận mắt người xem**.
+  - Giới hạn góc nghiêng bám tay trong khoảng **$\pm 20^\circ$ ($\pm 0.35\text{ rad}$)** giúp video giữ được độ bám 3D tự nhiên theo cổ tay mà không bị nghiêng quá đà gây khó xem.
+- **Tính Kích Thước Video 16:9 Thích Ứng Tư Thế (Dynamic Pose Scaling):**
+  - **Tư thế Đứng / Ngược:** $H_{\text{video}} = \|P_9 - P_0\| \times 0.95$.
+  - **Tư thế Ngang:** $H_{\text{video}} = \max(\|P_{17} - P_5\| \times 1.15,\ \|P_9 - P_0\| \times 0.72)$ để khung 16:9 ôm vừa vặn lòng bàn tay nằm ngang.
+  - Chiều rộng tự động tính theo chuẩn 16:9: $W_{\text{video}} = H_{\text{video}} \times \frac{16}{9}$.
 - **Bộ lọc làm mượt chuyển động (EMA Filter):** Áp dụng Exponential Moving Average với hệ số $\alpha = 0.65$ cho tọa độ tâm, kích thước và góc xoay để loại bỏ hoàn toàn hiện tượng rung giật (jitter).
 
 ### FR-04: Hiển Thị Khung Video MP4 & Triết Lý Giao Diện Siêu Sạch (Pure Clean UI)

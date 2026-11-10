@@ -305,3 +305,39 @@ html, body {
 .btn-copy-url:active {
   background: rgba(255, 255, 255, 0.2);
 }
+
+
+/* 5. Hỗ trợ Xoay Ngang Màn Hình Điện Thoại (Landscape Orientation) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .splash-overlay {
+    padding: 16px 24px;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .splash-top {
+    margin-top: 0;
+  }
+
+  .brand-logo-container {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 10px;
+  }
+
+  .project-title {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .btn-start-ar {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+
+  .scan-hint {
+    bottom: 20px;
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+}
