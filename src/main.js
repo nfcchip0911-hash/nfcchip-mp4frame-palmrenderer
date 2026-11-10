@@ -29,6 +29,7 @@ class WebARApp {
     this.sourceVideo = document.getElementById('source-video');
     this.splashScreen = document.getElementById('splash-screen');
     this.btnStart = document.getElementById('btn-start');
+    this.btnStartLabel = document.getElementById('btn-start-label') || this.btnStart;
     this.cardTitle = document.getElementById('card-title');
     this.scanHint = document.getElementById('scan-hint');
 
@@ -76,8 +77,9 @@ class WebARApp {
 
     this.cardDataPromise = getCardBySlug(slug).then((data) => {
       this.cardData = data;
-      if (this.cardData && this.cardData.title) {
-        this.cardTitle.innerText = this.cardData.title;
+      if (this.cardData && this.cardData.title && this.cardTitle) {
+        // Giữ nguyên heading thương hiệu "The Leaf Journey", lưu tên thẻ vào data attribute
+        this.cardTitle.dataset.cardTitle = this.cardData.title;
       }
       return data;
     });
@@ -89,10 +91,10 @@ class WebARApp {
 
     try {
       this.btnStart.disabled = true;
-      this.btnStart.innerText = 'Đang khởi động...';
+      this.btnStartLabel.innerText = 'Đang khởi động...';
 
       if (!this.cardData) {
-        this.btnStart.innerText = 'Đang nạp dữ liệu...';
+        this.btnStartLabel.innerText = 'Đang nạp dữ liệu...';
         this.cardData = await this.cardDataPromise;
       }
 
@@ -112,13 +114,13 @@ class WebARApp {
         console.warn('Audio unlock silent catch', e);
       }
 
-      this.btnStart.innerText = 'Đang bật Camera...';
+      this.btnStartLabel.innerText = 'Đang bật Camera...';
       await this.startCamera();
 
       if (!this.handTracker.isReady) {
-        this.btnStart.innerText = 'Đang nạp AI...';
+        this.btnStartLabel.innerText = 'Đang nạp AI...';
         await this.handTracker.init((status) => {
-          this.btnStart.innerText = status;
+          this.btnStartLabel.innerText = status;
         });
       }
 
@@ -136,7 +138,7 @@ class WebARApp {
       showDebugError(`Không thể khởi động: ${err.message || 'Lỗi thiết bị'}`);
       this.isStarting = false;
       this.btnStart.disabled = false;
-      this.btnStart.innerText = 'Chạm để Bắt đầu';
+      this.btnStartLabel.innerText = 'Chạm để Bắt đầu';
     }
   }
 

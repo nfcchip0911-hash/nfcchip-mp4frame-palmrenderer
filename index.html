@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#F9F5E9">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>The Leaf Journey • WebAR Palm Player</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>The Leaf Journey • Nón Lá & Văn Hóa Việt</title>
   <link rel="icon" type="image/jpeg" href="/brand/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
@@ -17,7 +20,7 @@
 
   <!-- Khung ứng dụng chính -->
   <div id="app-container">
-    
+
     <!-- Video luồng Camera sau của điện thoại -->
     <video id="camera-stream" autoplay playsinline muted></video>
 
@@ -33,28 +36,233 @@
       <span>Ngửa lòng bàn tay trước camera</span>
     </div>
 
-    <!-- Màn hình Khởi tạo (Splash Screen) -->
+    <!-- Màn hình Khởi tạo (Welcome / Landing Page — The Leaf Journey) -->
     <div id="splash-screen" class="splash-overlay">
-      <div class="splash-top">
+
+      <!-- Lớp nền trang trí Vietnamese Heritage -->
+      <div class="heritage-bg" aria-hidden="true">
+        <!-- Texture giấy dó thủ công nhẹ -->
+        <div class="paper-grain"></div>
+
+        <!-- Họa tiết mây cổ & bóng lá chìm ở nền trời -->
+        <svg class="sky-motifs" viewBox="0 0 1440 500" preserveAspectRatio="xMidYMid slice">
+          <!-- Bóng lá chìm trên cao -->
+          <g fill="#8C8353" opacity="0.09">
+            <path d="M220,20 C260,80 280,150 240,220 C210,160 200,90 220,20 Z" />
+            <path d="M280,0 C310,60 350,110 330,175 C295,130 270,70 280,0 Z" />
+            <path d="M1180,10 C1140,70 1130,145 1170,210 C1195,150 1200,80 1180,10 Z" />
+            <path d="M1110,30 C1075,85 1040,130 1065,190 C1100,145 1120,90 1110,30 Z" />
+          </g>
+          <!-- Vân mây truyền thống Việt Nam -->
+          <g fill="none" stroke="#8C8353" stroke-width="2.2" stroke-linecap="round" opacity="0.18">
+            <path d="M110,270 C140,245 190,245 215,265 C240,240 295,248 310,275 C330,272 350,285 340,302 C310,315 160,312 110,295 C90,288 95,275 110,270 Z" />
+            <path d="M235,282 C245,270 265,272 268,284 C270,294 252,298 245,290" />
+            <path d="M1040,210 C1075,182 1135,182 1165,205 C1195,178 1255,188 1270,218 C1292,216 1315,232 1300,250 C1265,264 1095,260 1040,240 C1018,232 1022,218 1040,210 Z" />
+            <path d="M1182,224 C1195,210 1218,214 1220,226 C1222,238 1202,242 1192,234" />
+          </g>
+        </svg>
+
+        <!-- Cành lá xanh góc trên trái -->
+        <svg class="corner-leaves leaves-top-left" viewBox="0 0 320 280" fill="none">
+          <defs>
+            <linearGradient id="leafGradL1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1A361F" />
+              <stop offset="100%" stop-color="#6F8F3D" />
+            </linearGradient>
+            <linearGradient id="leafGradL2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6F8F3D" />
+              <stop offset="100%" stop-color="#8C8353" />
+            </linearGradient>
+          </defs>
+          <path d="M-10,-10 C60,40 120,75 215,105" stroke="#76583C" stroke-width="3" stroke-linecap="round" opacity="0.65" />
+          <path d="M25,15 C80,65 110,120 140,195" stroke="#76583C" stroke-width="2.5" stroke-linecap="round" opacity="0.55" />
+          <!-- Lá chính -->
+          <path d="M40,25 C105,15 155,40 185,78 C135,88 78,68 40,25 Z" fill="url(#leafGradL1)" opacity="0.92" />
+          <path d="M45,28 C100,45 140,60 180,76" stroke="#ECD6AC" stroke-width="1" opacity="0.5" />
+          <path d="M98,68 C165,55 220,75 255,112 C205,124 145,106 98,68 Z" fill="url(#leafGradL1)" opacity="0.88" />
+          <path d="M105,71 C160,84 205,96 248,110" stroke="#ECD6AC" stroke-width="1" opacity="0.45" />
+          <path d="M15,75 C65,92 98,132 105,180 C62,162 28,125 15,75 Z" fill="url(#leafGradL2)" opacity="0.9" />
+          <path d="M60,115 C115,125 155,158 170,210 C122,196 82,162 60,115 Z" fill="url(#leafGradL1)" opacity="0.85" />
+          <path d="M-5,130 C35,148 58,188 55,235 C18,212 -2,175 -5,130 Z" fill="url(#leafGradL2)" opacity="0.82" />
+          <!-- Lá rơi nhẹ -->
+          <path class="floating-leaf-1" d="M210,165 C235,158 258,168 268,188 C242,192 220,182 210,165 Z" fill="#6F8F3D" opacity="0.72" />
+        </svg>
+
+        <!-- Cành lá xanh góc trên phải -->
+        <svg class="corner-leaves leaves-top-right" viewBox="0 0 320 280" fill="none">
+          <defs>
+            <linearGradient id="leafGradR1" x1="1" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1A361F" />
+              <stop offset="100%" stop-color="#6F8F3D" />
+            </linearGradient>
+          </defs>
+          <path d="M330,-10 C260,38 205,72 110,102" stroke="#76583C" stroke-width="3" stroke-linecap="round" opacity="0.65" />
+          <path d="M295,18 C245,68 215,125 190,198" stroke="#76583C" stroke-width="2.5" stroke-linecap="round" opacity="0.55" />
+          <path d="M280,24 C215,14 165,38 135,76 C185,88 242,68 280,24 Z" fill="url(#leafGradR1)" opacity="0.92" />
+          <path d="M222,66 C155,54 102,76 68,112 C118,124 176,105 222,66 Z" fill="url(#leafGradR1)" opacity="0.86" />
+          <path d="M305,74 C255,92 224,132 216,180 C258,162 292,124 305,74 Z" fill="#6F8F3D" opacity="0.88" />
+          <path d="M260,115 C206,125 168,160 154,212 C202,196 240,162 260,115 Z" fill="url(#leafGradR1)" opacity="0.84" />
+          <path class="floating-leaf-2" d="M115,180 C90,175 72,188 64,208 C88,210 106,198 115,180 Z" fill="#8C8353" opacity="0.68" />
+        </svg>
+
+        <!-- Bức tranh phong cảnh làng quê Việt Nam, núi đồi & ruộng lúa phía dưới -->
+        <svg class="countryside-panorama" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <linearGradient id="mistMountain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8C8353" stop-opacity="0.28" />
+              <stop offset="100%" stop-color="#ECD6AC" stop-opacity="0.06" />
+            </linearGradient>
+            <linearGradient id="midHills" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6F8F3D" stop-opacity="0.24" />
+              <stop offset="100%" stop-color="#ECD6AC" stop-opacity="0.18" />
+            </linearGradient>
+            <linearGradient id="riceField" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ECD6AC" stop-opacity="0.55" />
+              <stop offset="55%" stop-color="#8C8353" stop-opacity="0.32" />
+              <stop offset="100%" stop-color="#6F8F3D" stop-opacity="0.45" />
+            </linearGradient>
+          </defs>
+
+          <!-- Dãy núi đá vôi xa mờ trong sương -->
+          <path d="M-20,240 Q90,145 190,210 Q280,155 370,225 Q460,190 560,235 Q690,170 810,225 Q920,120 1040,195 Q1160,70 1280,130 Q1380,45 1470,125 L1470,360 L-20,360 Z" fill="url(#mistMountain)" />
+          <path d="M-20,260 Q140,195 270,248 Q420,210 560,262 Q730,215 880,258 Q1050,155 1210,220 Q1330,135 1470,195 L1470,360 L-20,360 Z" fill="url(#midHills)" />
+
+          <!-- Ngôi nhà nhỏ phía xa bên phải -->
+          <g transform="translate(1030, 224)" opacity="0.48">
+            <rect x="18" y="28" width="44" height="16" fill="#ECD6AC" stroke="#76583C" stroke-width="1" />
+            <polygon points="12,30 40,14 68,30" fill="#76583C" />
+            <path d="M-8,44 Q6,18 22,44 M56,44 Q72,20 88,44" fill="#6F8F3D" opacity="0.7" />
+          </g>
+
+          <!-- Cánh đồng lúa xanh trải dài -->
+          <path d="M-20,275 Q360,255 720,275 T1460,268 L1460,360 L-20,360 Z" fill="url(#riceField)" />
+          <path d="M-20,305 Q400,288 820,304 T1460,295 L1460,360 L-20,360 Z" fill="#6F8F3D" opacity="0.28" />
+          <!-- Đường bờ ruộng mảnh -->
+          <path d="M0,290 Q420,275 900,292 T1440,285" stroke="#8C8353" stroke-width="1.2" fill="none" opacity="0.35" />
+          <path d="M0,315 Q380,302 780,318 T1440,308" stroke="#6F8F3D" stroke-width="1.2" fill="none" opacity="0.32" />
+        </svg>
+
+        <!-- Nhà làng quê Việt Nam & Cây cau góc dưới trái (Hiển thị rõ trên mọi màn hình) -->
+        <svg class="village-accent" viewBox="0 0 210 140" fill="none">
+          <g opacity="0.88">
+            <!-- Bụi cây / rặng tre -->
+            <path d="M12,122 Q32,48 64,95 Q92,38 124,105 Q155,62 185,122 Z" fill="#6F8F3D" opacity="0.62" />
+            <!-- Cây cau thanh mảnh -->
+            <path d="M26,122 Q20,76 18,38" stroke="#76583C" stroke-width="3" fill="none" stroke-linecap="round" />
+            <path d="M18,38 Q2,30 -8,44 M18,38 Q10,16 22,8 M18,38 Q36,22 46,36 M18,38 Q36,44 38,58" stroke="#1A361F" stroke-width="2" stroke-linecap="round" fill="none" />
+            <!-- Ngôi nhà truyền thống mái ngói -->
+            <rect x="62" y="88" width="92" height="34" fill="#ECD6AC" stroke="#76583C" stroke-width="1.8" />
+            <polygon points="52,91 108,56 164,91" fill="#76583C" />
+            <polygon points="57,89 108,60 159,89" fill="#8C8353" opacity="0.72" />
+            <!-- Cửa gỗ & cửa sổ -->
+            <rect x="98" y="98" width="18" height="24" fill="#76583C" opacity="0.9" />
+            <rect x="74" y="100" width="13" height="10" fill="#1A361F" opacity="0.65" />
+            <rect x="128" y="100" width="13" height="10" fill="#1A361F" opacity="0.65" />
+          </g>
+        </svg>
+
+        <!-- Hình ảnh Nón Lá thủ công đặt trên bè tre ở góc dưới phải -->
+        <svg class="nonla-accent" viewBox="0 0 340 240" fill="none">
+          <defs>
+            <linearGradient id="nonLaBody" x1="0.2" y1="0" x2="0.85" y2="1">
+              <stop offset="0%" stop-color="#F9F5E9" />
+              <stop offset="45%" stop-color="#ECD6AC" />
+              <stop offset="100%" stop-color="#C4A876" />
+            </linearGradient>
+            <linearGradient id="nonLaShadow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#76583C" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#ECD6AC" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <!-- Bè / tấm đan tre nằm phía dưới -->
+          <g opacity="0.88">
+            <path d="M40,205 L335,172 L340,235 L25,235 Z" fill="#C9AE82" stroke="#76583C" stroke-width="1.5" />
+            <line x1="65" y1="203" x2="55" y2="235" stroke="#76583C" stroke-width="1.4" opacity="0.7" />
+            <line x1="115" y1="197" x2="105" y2="235" stroke="#76583C" stroke-width="1.4" opacity="0.7" />
+            <line x1="165" y1="191" x2="155" y2="235" stroke="#76583C" stroke-width="1.4" opacity="0.7" />
+            <line x1="215" y1="185" x2="205" y2="235" stroke="#76583C" stroke-width="1.4" opacity="0.7" />
+            <line x1="265" y1="179" x2="258" y2="235" stroke="#76583C" stroke-width="1.4" opacity="0.7" />
+            <line x1="35" y1="218" x2="338" y2="188" stroke="#76583C" stroke-width="1.8" opacity="0.6" />
+          </g>
+          <!-- Bóng đổ dưới nón -->
+          <ellipse cx="195" cy="182" rx="115" ry="22" fill="#1A361F" opacity="0.22" />
+          <!-- Thân Nón Lá -->
+          <path d="M72,166 L205,42 L322,164 C260,192 145,194 72,166 Z" fill="url(#nonLaBody)" stroke="#76583C" stroke-width="2" stroke-linejoin="round" />
+          <!-- Đường tạo khối bóng bên phải nón -->
+          <path d="M205,42 L322,164 C282,180 238,185 202,184 Z" fill="url(#nonLaShadow)" opacity="0.45" />
+          <!-- Nan nón dọc tỏa từ chóp -->
+          <g stroke="#76583C" stroke-width="1" opacity="0.42">
+            <line x1="205" y1="42" x2="105" y2="174" />
+            <line x1="205" y1="42" x2="138" y2="181" />
+            <line x1="205" y1="42" x2="170" y2="184" />
+            <line x1="205" y1="42" x2="205" y2="185" />
+            <line x1="205" y1="42" x2="240" y2="183" />
+            <line x1="205" y1="42" x2="275" y2="177" />
+            <line x1="205" y1="42" x2="302" y2="170" />
+          </g>
+          <!-- Vành tre đồng tâm quanh nón -->
+          <g stroke="#8C8353" stroke-width="1.2" fill="none" opacity="0.65">
+            <path d="M174,71 Q205,78 234,71" />
+            <path d="M150,94 Q205,106 258,94" />
+            <path d="M126,118 Q205,134 282,118" />
+            <path d="M100,142 Q205,163 304,142" />
+          </g>
+          <!-- Nhành lá xanh trang trí cạnh nón -->
+          <g transform="translate(225, 165)">
+            <path d="M0,38 Q35,18 92,8" stroke="#1A361F" stroke-width="2" stroke-linecap="round" />
+            <path d="M12,32 C30,12 52,12 68,20 C48,30 28,34 12,32 Z" fill="#1A361F" />
+            <path d="M38,24 C56,4 80,2 96,12 C76,22 56,26 38,24 Z" fill="#6F8F3D" />
+            <path d="M22,34 C44,28 65,34 78,46 C56,48 36,44 22,34 Z" fill="#6F8F3D" opacity="0.9" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- Nội dung chính căn giữa màn hình Welcome -->
+      <main class="splash-content">
         <div class="brand-logo-container">
           <img src="/brand/logo.jpg" alt="Logo The Leaf Journey" id="brand-logo">
         </div>
-        <h1 class="project-title" id="card-title">Trải Nghiệm WebAR</h1>
-        <p class="project-subtitle">Chạm thẻ & Khám phá khoảnh khắc kỳ diệu</p>
-      </div>
 
-      <div class="splash-center">
-        <button id="btn-start" class="btn-start-ar" type="button">
-          <span>Chạm để Bắt đầu</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"/>
+        <h1 class="project-title" id="card-title">The Leaf Journey</h1>
+
+        <!-- Đường kẻ trang trí Heritage Olive kèm lá -->
+        <div class="heritage-divider" aria-hidden="true">
+          <span class="divider-line"></span>
+          <svg class="divider-leaf" viewBox="0 0 24 24" fill="none">
+            <path d="M19 4C12 4 6.5 8.5 5 17C13.5 16 18.5 11.5 19 4Z" fill="#6F8F3D" />
+            <path d="M5 17C9 13 13 9.5 19 4" stroke="#1A361F" stroke-width="1.3" stroke-linecap="round" />
           </svg>
-        </button>
-      </div>
+          <span class="divider-line"></span>
+        </div>
 
-      <div class="splash-bottom">
-        <p>Xử lý AI cục bộ trên thiết bị • Không lưu hình ảnh</p>
-      </div>
+        <p class="project-subtitle">nón lá và văn hoá Việt</p>
+
+        <div class="splash-cta-wrap">
+          <button id="btn-start" class="btn-start-ar" type="button">
+            <span id="btn-start-label">Chạm để Bắt đầu</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+        </div>
+      </main>
+
+      <!-- Footer Deep Forest Green với đường cong Organic Wave -->
+      <footer class="splash-footer">
+        <svg class="footer-wave" viewBox="0 0 1440 72" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,26 C320,64 560,2 960,28 C1180,42 1330,22 1440,8 L1440,72 L0,72 Z" fill="#1A361F" />
+          <path d="M0,26 C320,64 560,2 960,28 C1180,42 1330,22 1440,8" stroke="#6F8F3D" stroke-width="3" fill="none" opacity="0.85" />
+        </svg>
+        <div class="footer-inner">
+          <div class="footer-brand-row">
+            <span class="footer-line"></span>
+            <span class="footer-brand-name">The Leaf Journey</span>
+            <span class="footer-line"></span>
+          </div>
+          <p class="footer-privacy">Xử lý AI cục bộ trên thiết bị • Không lưu hình ảnh</p>
+        </div>
+      </footer>
+
     </div>
 
   </div>
