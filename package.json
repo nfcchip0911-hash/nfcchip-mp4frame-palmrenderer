@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.14",
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "vite": "^6.2.0"

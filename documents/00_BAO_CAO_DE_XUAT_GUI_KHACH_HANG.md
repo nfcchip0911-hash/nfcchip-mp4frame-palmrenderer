@@ -106,11 +106,11 @@ flowchart LR
 | STT | Chức năng | Mô tả chi tiết |
 | :-: | :--- | :--- |
 | 1 | **Đăng nhập quản trị** | Bảo mật qua Supabase Auth (cấp sẵn 02 tài khoản quản trị). |
-| 2 | **Tải video lên** | Upload trực tiếp file `.mp4` vào Supabase Storage bucket `videos`. |
-| 3 | **Tạo link & mã QR** | Tự động sinh link WebAR theo mã gợi nhớ kèm mã QR dự phòng và nút Copy Link. |
-| 4 | **Danh sách thẻ** | Xem toàn bộ thẻ đã tạo, ngày tạo, trạng thái kích hoạt. |
-| 5 | **Đổi video giữ nguyên link** | Cho phép thay file video mới mà **giữ nguyên mã link NFC**, không cần nạp lại thẻ vật lý. |
-| 6 | **Xóa thẻ** | Xóa bản ghi và video không còn sử dụng. |
+| 2 | **Tải video lên & Tạo mã bảo mật** | Upload file `.mp4` ($\le 20\text{MB}$) vào Supabase Storage bucket `videos`. Tự động sinh mã slug từ tên gợi nhớ kèm **hậu tố 4 ký tự ngẫu nhiên** chống dò link. |
+| 3 | **Tạo link & Tải ảnh QR Offline** | Tự động sinh link WebAR, vẽ mã QR ngay trên trình duyệt kèm nút Copy Link và **Tải Ảnh QR (.PNG)**. |
+| 4 | **Danh sách thẻ & Bật/Tắt nhanh** | Tìm kiếm thẻ, xem thống kê KPI tổng quan và bấm bật/tắt trạng thái kích hoạt (`Hoạt động` / `Tạm ẩn`). |
+| 5 | **Đổi video giữ nguyên link** | Cho phép thay file video mới mà **giữ nguyên mã link NFC**, tự động dọn dẹp file cũ trên Storage và **đặt lại lượt quét về 0** (kèm thông báo Toast). |
+| 6 | **Xóa thẻ (An toàn)** | Có hộp thoại xác nhận và dọn dẹp file trên Storage; khóa bảo vệ không cho xóa thẻ mẫu `demo` mặc định. |
 | 7 | **Thống kê lượt quét (`view_count`)** | Hiển thị số lượt xem thực tế của từng thẻ, ghi nhận an toàn qua Supabase RPC khi người dùng ngửa tay xem video. |
 
 ---

@@ -138,11 +138,12 @@ flowchart TD
 ### FR-06: Trang Quản Trị `/admin` Dành Cho Khách Hàng Tự Vận Hành
 - **Đăng nhập & Xác thực:** Xác thực qua Supabase Auth với 02 tài khoản Admin được cấp sẵn.
 - **Chức năng chính trên `/admin`:**
-  1. **Upload Video trực tiếp:** Cho phép chọn file `.mp4` từ máy tính/điện thoại, tự động tải lên Supabase Storage bucket `videos`.
-  2. **Quản lý Định danh (Slug):** Nhập mã định danh (ví dụ `qua-tang-01`).
-  3. **Tạo Link NFC & Mã QR:** Tự động tạo link URL đầy đủ (`https://ten-mien.com/?v=qua-tang-01`) kèm nút **Copy Link** và mã QR để in dự phòng.
-  4. **Thống kê Lượt quét (Analytics):** Bảng hiển thị danh sách các mã thẻ, tiêu đề, ngày tạo, trạng thái và **số lượt quét thực tế (`view_count`)** cập nhật theo thời gian thực.
-  5. **Chỉnh sửa / Đổi Video:** Cho phép thay đổi file video của một mã thẻ mà **giữ nguyên đường link NFC**, không cần nạp lại thẻ vật lý.
+  1. **Upload Video trực tiếp & Validation:** Kiểm tra định dạng `.mp4` và dung lượng ($\le 20\text{MB}$ tối đa, cảnh báo nếu $> 10\text{MB}$) trước khi tải lên Supabase Storage bucket `videos`.
+  2. **Quản lý Định danh Bảo mật (Auto-Slug + Hậu tố ngẫu nhiên):** Tự động chuyển đổi tên gợi nhớ sang slug không dấu và gắn kèm hậu tố 4 ký tự ngẫu nhiên (vd: `qua-tang-x8k2`) để chống dò link.
+  3. **Tạo Link NFC & Mã QR Offline:** Sinh mã QR trực tiếp phía trình duyệt (Canvas) kèm nút **Sao Chép Link** và **Tải Ảnh QR (.PNG)**.
+  4. **Thống kê KPI & Quản lý Danh sách:** Hiển thị 3 thẻ KPI tổng quan, tìm kiếm theo mã/tiêu đề, và bấm bật/tắt trạng thái `is_active` nhanh chóng.
+  5. **Đổi Video Giữ Nguyên Link & Dọn Storage:** Cho phép thay file video mới giữ nguyên link NFC; tự động xóa file video cũ khỏi Storage và **đặt lại `view_count = 0`** (hiển thị Toast thông báo rõ cho người quản trị).
+  6. **Xóa Thẻ An Toàn:** Hộp thoại xác nhận xóa bản ghi kèm xóa file Storage; khóa bảo vệ không cho xóa thẻ mẫu `demo` mặc định.
 
 ---
 
