@@ -88,8 +88,12 @@ body {
 }
 
 .admin-logo {
-  width: 72px;
-  height: 72px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
   margin-bottom: 16px;
 }
 
@@ -286,8 +290,11 @@ small {
 }
 
 .header-logo {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 }
 
 .header-brand h1 {

@@ -175,7 +175,7 @@ C:\Software_Engineering\MINE_PRODUCTS\NFCchip\
 │   │   ├── hand_landmarker.task               # Model MediaPipe AI (Self-hosted)
 │   │   └── wasm\                              # Binary WebAssembly của MediaPipe
 │   ├── brand\
-│   │   └── logo.png                           # Logo khách hàng hiển thị tại Splash Screen
+│   │   └── logo.jpg                           # Logo khách hàng hiển thị tại Splash Screen & /admin
 │   ├── favicon.ico
 │   └── robots.txt
 ├── src\
