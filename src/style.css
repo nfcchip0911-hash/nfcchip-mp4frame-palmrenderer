@@ -407,12 +407,11 @@ html, body {
 
 .footer-inner {
   background-color: var(--forest-green);
-  padding: 6px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   text-align: center;
 }
 
@@ -439,14 +438,6 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--warm-ivory);
-}
-
-.footer-privacy {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 400;
-  color: rgba(249, 245, 233, 0.78);
-  letter-spacing: 0.01em;
 }
 
 /* Keyframes Entrance */
@@ -630,10 +621,6 @@ html, body {
     font-size: 15px;
     min-width: 220px;
   }
-
-  .footer-privacy {
-    font-size: 11px;
-  }
 }
 
 /* Xoay ngang màn hình điện thoại (Landscape) */
@@ -700,10 +687,6 @@ html, body {
 
   .footer-brand-name {
     font-size: 13px;
-  }
-
-  .footer-privacy {
-    font-size: 10.5px;
   }
 
   .scan-hint {
